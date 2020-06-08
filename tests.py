@@ -4,7 +4,7 @@ from app import app
 from models import db, Cupcake
 
 # Use test database and don't clutter tests with SQL
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///cupcakes_test'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///cupcakes_tests'
 app.config['SQLALCHEMY_ECHO'] = False
 
 # Make Flask errors be real errors, rather than HTML pages with error info
@@ -107,3 +107,38 @@ class CupcakeViewsTestCase(TestCase):
             })
 
             self.assertEqual(Cupcake.query.count(), 2)
+
+    def test_update_cupcake(self):
+        with app.test_client() as client:
+            url = f"/api/cupcakes/{self.cupcake.id}"
+            # could make this into a global variable
+            resp = client.patch(url, json={
+                                     "flavor" : "pizza",
+                                     "size" : "large",
+                                    "rating" : 15,
+                                    "image" : "http://test.com/cupcake.jpg"
+                                    })
+
+            data = resp.json
+            self.assertEqual(data, {
+                            "cupcake": {
+                            "id" : self.cupcake.id,
+                            "flavor" : "pizza",
+                            "size" : "large",
+                            "rating" : 15,
+                            "image" : "http://test.com/cupcake.jpg"
+                          }
+                       })
+
+            self.assertEqual(Cupcake.query.count(), 1)
+    
+    def test_delete_cupcake(self):
+        with app.test_client() as client:
+            url = f"/api/cupcakes/{self.cupcake.id}"
+            #Do we not need the json since the id is in the URL?
+            resp = client.delete(url)
+
+            data = resp.json
+
+            self.assertEqual(data, {"message": "Deleted"})
+            self.assertEqual(Cupcake.query.count(), 0)
