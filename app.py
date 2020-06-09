@@ -1,5 +1,5 @@
 """Flask app for Cupcakes"""
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from models import db, connect_db, Cupcake
 
 app = Flask(__name__)
@@ -54,7 +54,7 @@ def create_cupcake():
     flavor = request.json['flavor']
     size = request.json['size']
     rating = request.json['rating']
-    image = request.json['image']
+    image = request.json['image'] or None
 
     cupcake = Cupcake(flavor=flavor, size=size, 
                             rating=rating, image=image)
@@ -97,4 +97,10 @@ def delete_cupcake(cupcake_id):
 
 # might want to keep this uniform
     return {"message": "Deleted"}
+
+@app.route('/')
+def show_homepage():
+    """show homepage"""
+
+    return render_template('cupcakes.html')
 
